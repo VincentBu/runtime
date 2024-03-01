@@ -458,34 +458,56 @@ private:
 
             switch (InnerUnroll) {
                 case 12: d12 = MT::load_vec(nextPtr + InnerUnroll - 12);
+                [[clang::fallthrough]];
                 case 11: d11 = MT::load_vec(nextPtr + InnerUnroll - 11);
+                [[clang::fallthrough]];
                 case 10: d10 = MT::load_vec(nextPtr + InnerUnroll - 10);
+                [[clang::fallthrough]];
                 case  9: d09 = MT::load_vec(nextPtr + InnerUnroll -  9);
+                [[clang::fallthrough]];
                 case  8: d08 = MT::load_vec(nextPtr + InnerUnroll -  8);
+                [[clang::fallthrough]];
                 case  7: d07 = MT::load_vec(nextPtr + InnerUnroll -  7);
+                [[clang::fallthrough]];
                 case  6: d06 = MT::load_vec(nextPtr + InnerUnroll -  6);
+                [[clang::fallthrough]];
                 case  5: d05 = MT::load_vec(nextPtr + InnerUnroll -  5);
+                [[clang::fallthrough]];
                 case  4: d04 = MT::load_vec(nextPtr + InnerUnroll -  4);
+                [[clang::fallthrough]];
                 case  3: d03 = MT::load_vec(nextPtr + InnerUnroll -  3);
+                [[clang::fallthrough]];
                 case  2: d02 = MT::load_vec(nextPtr + InnerUnroll -  2);
+                [[clang::fallthrough]];
                 case  1: d01 = MT::load_vec(nextPtr + InnerUnroll -  1);
             }
 
             switch (InnerUnroll) {
                 case 12: partition_block(d12, P, writeLeft, writeRight);
+                [[clang::fallthrough]];
                 case 11: partition_block(d11, P, writeLeft, writeRight);
+                [[clang::fallthrough]];
                 case 10: partition_block(d10, P, writeLeft, writeRight);
+                [[clang::fallthrough]];
                 case  9: partition_block(d09, P, writeLeft, writeRight);
+                [[clang::fallthrough]];
                 case  8: partition_block(d08, P, writeLeft, writeRight);
+                [[clang::fallthrough]];
                 case  7: partition_block(d07, P, writeLeft, writeRight);
+                [[clang::fallthrough]];
                 case  6: partition_block(d06, P, writeLeft, writeRight);
+                [[clang::fallthrough]];
                 case  5: partition_block(d05, P, writeLeft, writeRight);
+                [[clang::fallthrough]];
                 case  4: partition_block(d04, P, writeLeft, writeRight);
+                [[clang::fallthrough]];
                 case  3: partition_block(d03, P, writeLeft, writeRight);
+                [[clang::fallthrough]];
                 case  2: partition_block(d02, P, writeLeft, writeRight);
+                [[clang::fallthrough]];
                 case  1: partition_block(d01, P, writeLeft, writeRight);
-              }
-          }
+            }
+        }
 
         readRightV += (InnerUnroll - 1);
 

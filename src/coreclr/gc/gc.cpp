@@ -18,7 +18,7 @@
 
 #include "gcpriv.h"
 
-#if defined(TARGET_AMD64) && defined(TARGET_WINDOWS)
+#if defined(TARGET_AMD64)
 #define USE_VXSORT
 #else
 #define USE_INTROSORT
@@ -10335,10 +10335,12 @@ static void do_vxsort (uint8_t** item_array, ptrdiff_t item_count, uint8_t* rang
         // use AVX512F only if the list is large enough to pay for downclocking impact
         if (IsSupportedInstructionSet (InstructionSet::AVX512F) && (item_count > AVX512F_THRESHOLD_SIZE))
         {
+            GCEventFireVxSort_V1 ();
             do_vxsort_avx512 (item_array, &item_array[item_count - 1], range_low, range_high);
         }
         else
         {
+            GCEventFireVxSort_V1 ();
             do_vxsort_avx2 (item_array, &item_array[item_count - 1], range_low, range_high);
         }
     }

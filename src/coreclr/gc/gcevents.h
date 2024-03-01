@@ -52,5 +52,7 @@ DYNAMIC_EVENT(CommittedUsage, GCEventLevel_Information, GCEventKeyword_GC, 1)
 DYNAMIC_EVENT(HeapCountTuning, GCEventLevel_Information, GCEventKeyword_GC, 1)
 DYNAMIC_EVENT(HeapCountSample, GCEventLevel_Information, GCEventKeyword_GC, 1)
 
+DYNAMIC_EVENT(VxSort, GCEventLevel_Information, GCEventKeyword_GC, 1)
+
 #undef KNOWN_EVENT
 #undef DYNAMIC_EVENT
