@@ -159,8 +159,8 @@ inline void FATAL_GC_ERROR()
 // + creates some pins on our own
 // + creates some ro segs
 // We can add more mechanisms here.
-//#define STRESS_REGIONS
-//#define COMMITTED_BYTES_SHADOW
+#define STRESS_REGIONS
+#define COMMITTED_BYTES_SHADOW
 #define MARK_PHASE_PREFETCH
 #endif //USE_REGIONS
 
