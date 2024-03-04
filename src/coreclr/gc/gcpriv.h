@@ -151,7 +151,7 @@ inline void FATAL_GC_ERROR()
 #if defined(USE_REGIONS) && defined(MULTIPLE_HEAPS)
 // can only change heap count with regions
 #define DYNAMIC_HEAP_COUNT
-//#define STRESS_DYNAMIC_HEAP_COUNT
+#define STRESS_DYNAMIC_HEAP_COUNT
 #endif //USE_REGIONS && MULTIPLE_HEAPS
 
 #ifdef USE_REGIONS
@@ -159,8 +159,8 @@ inline void FATAL_GC_ERROR()
 // + creates some pins on our own
 // + creates some ro segs
 // We can add more mechanisms here.
-//#define STRESS_REGIONS
-//#define COMMITTED_BYTES_SHADOW
+#define STRESS_REGIONS
+#define COMMITTED_BYTES_SHADOW
 #define MARK_PHASE_PREFETCH
 #endif //USE_REGIONS
 
