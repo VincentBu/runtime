@@ -187,13 +187,11 @@ public sealed partial class QuicConnection : IAsyncDisposable
     /// </summary>
     private SslApplicationProtocol _negotiatedApplicationProtocol;
 
-#if DEBUG
     /// <summary>
     /// Will contain TLS secret after CONNECTED event is received and store it into SSLKEYLOGFILE.
     /// MsQuic holds the underlying pointer so this object can be disposed only after connection native handle gets closed.
     /// </summary>
     private readonly MsQuicTlsSecret? _tlsSecret;
-#endif
 
     /// <summary>
     /// The remote endpoint used for this connection.
@@ -254,9 +252,12 @@ public sealed partial class QuicConnection : IAsyncDisposable
             throw;
         }
 
-#if DEBUG
+        if (NetEventSource.Log.IsEnabled())
+        {
+            NetEventSource.Info(this, $"{this} New outbound connection.");
+        }
+
         _tlsSecret = MsQuicTlsSecret.Create(_handle);
-#endif
     }
 
     /// <summary>
@@ -284,9 +285,7 @@ public sealed partial class QuicConnection : IAsyncDisposable
 
         _remoteEndPoint = MsQuicHelpers.QuicAddrToIPEndPoint(info->RemoteAddress);
         _localEndPoint = MsQuicHelpers.QuicAddrToIPEndPoint(info->LocalAddress);
-#if DEBUG
         _tlsSecret = MsQuicTlsSecret.Create(_handle);
-#endif
     }
 
     private async ValueTask FinishConnectAsync(QuicClientConnectionOptions options, CancellationToken cancellationToken = default)
@@ -417,6 +416,12 @@ public sealed partial class QuicConnection : IAsyncDisposable
         try
         {
             stream = new QuicStream(_handle, type, _defaultStreamErrorCode);
+
+            if (NetEventSource.Log.IsEnabled())
+            {
+                NetEventSource.Info(this, $"{this} New outbound {type} stream {stream}.");
+            }
+
             await stream.StartAsync(cancellationToken).ConfigureAwait(false);
         }
         catch
@@ -488,6 +493,11 @@ public sealed partial class QuicConnection : IAsyncDisposable
 
         if (_shutdownTcs.TryGetValueTask(out ValueTask valueTask, this, cancellationToken))
         {
+            if (NetEventSource.Log.IsEnabled())
+            {
+                NetEventSource.Info(this, $"{this} Closing connection, Error code = {errorCode}");
+            }
+
             unsafe
             {
                 MsQuicApi.Api.ConnectionShutdown(
@@ -510,9 +520,8 @@ public sealed partial class QuicConnection : IAsyncDisposable
         QuicAddr localAddress = MsQuicHelpers.GetMsQuicParameter<QuicAddr>(_handle, QUIC_PARAM_CONN_LOCAL_ADDRESS);
         _localEndPoint = MsQuicHelpers.QuicAddrToIPEndPoint(&localAddress);
 
-#if DEBUG
+        // Final (1-RTT) secrets have been derived, log them if desired to allow decrypting application traffic.
         _tlsSecret?.WriteSecret();
-#endif
 
         if (NetEventSource.Log.IsEnabled())
         {
@@ -535,6 +544,9 @@ public sealed partial class QuicConnection : IAsyncDisposable
     }
     private unsafe int HandleEventShutdownComplete()
     {
+        // make sure we log at least some secrets in case of shutdown before handshake completes.
+        _tlsSecret?.WriteSecret();
+
         Exception exception = ExceptionDispatchInfo.SetCurrentStackTrace(_disposed == 1 ? new ObjectDisposedException(GetType().FullName) : ThrowHelper.GetOperationAbortedException());
         _acceptQueue.Writer.TryComplete(exception);
         _connectedTcs.TrySetException(exception);
@@ -555,6 +567,13 @@ public sealed partial class QuicConnection : IAsyncDisposable
     private unsafe int HandleEventPeerStreamStarted(ref PEER_STREAM_STARTED_DATA data)
     {
         QuicStream stream = new QuicStream(_handle, data.Stream, data.Flags, _defaultStreamErrorCode);
+
+        if (NetEventSource.Log.IsEnabled())
+        {
+            QuicStreamType type = data.Flags.HasFlag(QUIC_STREAM_OPEN_FLAGS.UNIDIRECTIONAL) ? QuicStreamType.Unidirectional : QuicStreamType.Bidirectional;
+            NetEventSource.Info(this, $"{this} New inbound {type} stream {stream}, Id = {stream.Id}.");
+        }
+
         if (!_acceptQueue.Writer.TryWrite(stream))
         {
             if (NetEventSource.Log.IsEnabled())
@@ -577,6 +596,9 @@ public sealed partial class QuicConnection : IAsyncDisposable
         // also prevents potential user RemoteCertificateValidationCallback from blocking MsQuic
         // worker threads.
         //
+
+        // Handshake keys should be available by now, log them now if desired.
+        _tlsSecret?.WriteSecret();
 
         var task = _sslConnectionOptions.StartAsyncCertificateValidation((IntPtr)data.Certificate, (IntPtr)data.Chain);
         if (task.IsCompletedSuccessfully)
@@ -649,6 +671,11 @@ public sealed partial class QuicConnection : IAsyncDisposable
             return;
         }
 
+        if (NetEventSource.Log.IsEnabled())
+        {
+            NetEventSource.Info(this, $"{this} Disposing.");
+        }
+
         // Check if the connection has been shut down and if not, shut it down.
         if (_shutdownTcs.TryGetValueTask(out ValueTask valueTask, this))
         {
@@ -676,7 +703,6 @@ public sealed partial class QuicConnection : IAsyncDisposable
         Debug.Assert(_connectedTcs.IsCompleted);
         _handle.Dispose();
         _shutdownTokenSource.Dispose();
-
         _configuration?.Dispose();
 
         // Dispose remote certificate only if it hasn't been accessed via getter, in which case the accessing code becomes the owner of the certificate lifetime.
