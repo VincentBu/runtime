@@ -16957,7 +16957,7 @@ void gc_heap::adjust_limit_clr (uint8_t* start, size_t limit_size, size_t size,
 #ifdef FEATURE_EVENT_TRACE
     if (fire_event_p)
     {
-        fire_etw_allocation_event (etw_allocation_amount, gen_number, acontext->alloc_ptr, size);
+        // fire_etw_allocation_event (etw_allocation_amount, gen_number, acontext->alloc_ptr, size);
     }
 #endif //FEATURE_EVENT_TRACE
 
@@ -17497,7 +17497,7 @@ void gc_heap::bgc_uoh_alloc_clr (uint8_t* alloc_start,
 #ifdef FEATURE_EVENT_TRACE
     if (fire_event_p)
     {
-        fire_etw_allocation_event (etw_allocation_amount, gen_number, alloc_start, size);
+        // fire_etw_allocation_event (etw_allocation_amount, gen_number, alloc_start, size);
     }
 #endif //FEATURE_EVENT_TRACE
 

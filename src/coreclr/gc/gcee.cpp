@@ -308,12 +308,12 @@ void gc_heap::fire_etw_allocation_event (size_t allocation_amount,
                                          uint8_t* object_address,
                                          size_t object_size)
 {
-    FIRE_EVENT(GCAllocationTick_V4,
-                allocation_amount,
-                (uint32_t)gen_to_oh (gen_number),
-                heap_number,
-                object_address,
-                object_size);
+    // FIRE_EVENT(GCAllocationTick_V4,
+    //             allocation_amount,
+    //             (uint32_t)gen_to_oh (gen_number),
+    //             heap_number,
+    //             object_address,
+    //             object_size);
 }
 
 void gc_heap::fire_etw_pin_object_event (uint8_t* object, uint8_t** ppObject)
